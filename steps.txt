@@ -1,0 +1,50 @@
+
+
+- dar opcion de elimina funcion *
+- pedir fecha y hora especifica => *
+- buscar en registros y devolver datos completos para verificar *
+- crear service de director para poder enviar sus datos tambien
+- dar opcion si es la que busca  
+- eliminar o volver a pedir nombre
+
+- meojrar mensaje de eliminar funcion 
+- CREAR SI O SI DIRECTORS.txt y usar sus servicios.
+- añadir mas try catch
+
+
+URGENTE
+-cambiar True = trueEN VALIDACION
+-fijarte si leo si es nacional o internacional!! porque la prop es nacional.
+
+
+
+
+
+
+
+
+- manejo de errores si el arvhioc esta vacio, al momento de leer el archivo podria haber un error, tambioen validad que tenga la cantidad de intems adecuado, de esa manera no iterearemos sobre lineaas vacias.
+
+/*
+
+esta dejando crear con horarios pisados
+22|10000|2025-12-05 12:30|2025-12-05 14:25|1|1|False
+23|100|2025-12-05 12:30|2025-12-05 14:25|1|1|False
+*/
+
+- validar que no se puedan poner por ejemplo mes 14
+
+
+
+
+
+
+writer.WriteLine($"{Price:0.00}"); // ejemplo: 10.50
+
+
+//parametros finales
+
+- que en el precio no se pueda poner numeros con muchos decimales para que 10.500 no sea igual a 10.5
+
+
+- tener siempre un "volver a atras o terminar ejecucion"
