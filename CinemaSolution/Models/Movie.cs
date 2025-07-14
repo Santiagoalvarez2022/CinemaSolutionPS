@@ -20,8 +20,9 @@ namespace CinemaSolution.Models
 
         public override string ToString()
         {
+            string isInternational = IsInternational.ToString().ToLower();
             
-            return $"{Id}|{Name}|{Duration}|{IdDirector}|{IsInternational}";
+            return $"{Id}|{Name}|{Duration}|{IdDirector}|{isInternational}";
         }
     }
 }

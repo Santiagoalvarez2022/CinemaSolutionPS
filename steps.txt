@@ -1,38 +1,22 @@
 
 
-- dar opcion de elimina funcion *
-- pedir fecha y hora especifica => *
-- buscar en registros y devolver datos completos para verificar *
-- crear service de director para poder enviar sus datos tambien
-- dar opcion si es la que busca  
-- eliminar o volver a pedir nombre
-
-- meojrar mensaje de eliminar funcion 
-- CREAR SI O SI DIRECTORS.txt y usar sus servicios.
-- añadir mas try catch
-
+-trycatch
 
 URGENTE
--cambiar True = trueEN VALIDACION
--fijarte si leo si es nacional o internacional!! porque la prop es nacional.
+- cuando borro un registro se deja el salo de linea.
+- no se puede modificar un archvio con la misma fecha del anterior
 
-
-
-
-
-
-
-
-- manejo de errores si el arvhioc esta vacio, al momento de leer el archivo podria haber un error, tambioen validad que tenga la cantidad de intems adecuado, de esa manera no iterearemos sobre lineaas vacias.
-
-/*
-
-esta dejando crear con horarios pisados
-22|10000|2025-12-05 12:30|2025-12-05 14:25|1|1|False
-23|100|2025-12-05 12:30|2025-12-05 14:25|1|1|False
-*/
-
+MODIFICA LINE
+- busco la linea con los datos actuales y los muestro.
+- pido los datos uno a uno como al crear
+- Al terminar de recorrer todos intento crear una nueva funcion, validandola.
+- si al capturar los datos, 
+envio mensaje de errores correspondientes.
+- si esta todo bien, muestros ambos  y le digo si acepta o no hacer los cambios
+ guardo esa nuevo y borro la otra.
+- reviso para que funciona el modfyscrening.
 - validar que no se puedan poner por ejemplo mes 14
+
 
 
 

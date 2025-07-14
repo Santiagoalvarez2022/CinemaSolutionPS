@@ -6,7 +6,7 @@ namespace CinemaSolution.UI
 {
     public class ScreeningMenu : BaseMenu
     {
-        public DateTime[] GetSchedules(string[] movie, ScreeningService screeningService)
+        public DateTime[] GetSchedules(string[] movie, ScreeningService screeningService, List<string> Records)
         {
             DateTime StartScreening;
             DateTime FinishScreening;
@@ -30,8 +30,10 @@ namespace CinemaSolution.UI
 
                 try
                 {
-                    //hacer las validaciones aqui mismo.
-                    bool isValid = screeningService.ValidateInstance(StartScreening, FinishScreening, IdDirector, IsInternational);
+                    
+
+                    bool isValid = screeningService.ValidateInstance(StartScreening, FinishScreening, IdDirector, IsInternational, Records);
+
                     if (isValid)
                     {
                         return new DateTime[] { StartScreening, FinishScreening };
@@ -105,9 +107,10 @@ namespace CinemaSolution.UI
 
                 //get an array with the movie data
                 string[] Movie = CaptureMovie(movieService);
+                List<string> allRecords = screeningService.GetAllScreening();
 
                 //get an available date and time for the film screening
-                DateTime[] Schedules = GetSchedules(Movie, screeningService);
+                DateTime[] Schedules = GetSchedules(Movie, screeningService,allRecords);
 
 
                 //"DatabaseHandler.ValidateRecord" returns the data validating that a .ToParce() can be performed without errors.
@@ -139,7 +142,7 @@ namespace CinemaSolution.UI
                 //get the correct screening to deleate
                 if (screeningService.GetScreeningByDate(NewDate, out FoundScreening))
                 {
-                    int IdMovieFound = int.Parse(FoundScreening[0]);
+                    int IdMovieFound = int.Parse(FoundScreening[4]);
 
                     string[] FoundMovie;
                     if (movieService.GetMovieById(IdMovieFound, out FoundMovie))
@@ -174,42 +177,98 @@ namespace CinemaSolution.UI
         {
         
             string[] FoundScreening;
-            while (true)
+            string[] FoundMovie;
+            try
             {
-                Console.WriteLine("Please provide the exact date and start time of the screening to be modify");
-                DateTime NewDate = InputCorrectDateFormat();
-                //get the correct screening to deleate
-                if (screeningService.GetScreeningByDate(NewDate, out FoundScreening))
+                while (true)
                 {
-                    int IdMovieFound = int.Parse(FoundScreening[0]);
-
-                    string[] FoundMovie;
-                    if (movieService.GetMovieById(IdMovieFound, out FoundMovie))
+                    Console.WriteLine("Please provide the exact date and start time of the screening to be modify");
+                    DateTime NewDate = InputCorrectDateFormat();
+                    //get the correct screening to deleate
+                    if (screeningService.GetScreeningByDate(NewDate, out FoundScreening))
                     {
-                        Console.Clear();
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine("Is the following screening the one you wish to delete?");
-                        Console.ResetColor();
-                        Console.WriteLine($"Screening Start: {FoundScreening[2]}");
-                        Console.WriteLine($"Screening End: {FoundScreening[3]}");
-                        Console.WriteLine($"Movie Name: {FoundMovie[1]}");
-                        Console.WriteLine($"Ticket Price: {FoundScreening[1]}");
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine("Enter 1 for Yes, 2 for No");
-                        Console.ResetColor();
+                        int IdMovieFound = int.Parse(FoundScreening[4]);
 
-                        int option = InputNaturalNumbers(2);
-                        if (option == 1) break;
-                        Console.Clear();
+                        if (movieService.GetMovieById(IdMovieFound, out FoundMovie))
+                        {
+                            Console.Clear();
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.WriteLine("Is the following screening the one you wish to modify?");
+                            Console.ResetColor();
+                            Console.WriteLine($"Screening Start: {FoundScreening[2]}");
+                            Console.WriteLine($"Screening End: {FoundScreening[3]}");
+                            Console.WriteLine($"Movie Name: {FoundMovie[1]}");
+                            Console.WriteLine($"Ticket Price: {FoundScreening[1]}");
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.WriteLine("Enter 1 for Yes, 2 for No or 3 to Exit.");
+                            Console.ResetColor();
+                            int option = InputNaturalNumbers(2);
+                            if (option == 1) break;
+                            if (option == 3)
+                            {
+                                Environment.Exit(0);
+                            }
+                            ;
+                            Console.Clear();
+                        }
+                    }
+                    else
+                    {
+                        //este error mandarlo desde la base de datos.
+                        Console.WriteLine($"No screening was found at the specified date and time, please try another one.");
                     }
                 }
-                else
-                {
-                    Console.WriteLine($"No screening was found at the specified date and time, please try another one.");
-                }
-            }
-            screeningService.DeleteScreening(FoundScreening);
+                string[] instruction = ["Great, now we're going to ask you for the new information to complete the modification."];
+                SendInstruction(instruction);
+                //get a new movie
+                string[] Movie = CaptureMovie(movieService);
 
+                //cerate a string of oldData
+                string screningToModify = string.Join('|', FoundScreening);
+
+                //get all data in db to compare 
+
+                List<string> ListRecords = screeningService.GetAllScreening();
+
+                ListRecords.Remove(screningToModify);
+
+                string[] instruction2 = ["Good! Now we need the new start date and time."];
+                SendInstruction(instruction2);
+
+
+                //get an available date and time for the film screening
+                DateTime[] Schedules = GetSchedules(Movie, screeningService, ListRecords);
+
+
+                //"DatabaseHandler.ValidateRecord" returns the data validating that a .ToParce() can be performed without errors.
+                DateTime StartTime = Schedules[0];
+                DateTime EndTime = Schedules[1];
+                bool IsInternational = bool.Parse(Movie[4]);
+                int IdDirector = int.Parse(Movie[3]);
+
+                int IdMovie = int.Parse(Movie[0]);
+
+                int Id = int.Parse(FoundScreening[0]);
+                decimal Price = InputDecimal();
+
+                //"newScreening" is a new instance of model Screening
+                Screening newScreening = new Screening(Id, Price, StartTime, EndTime, IdMovie, IdDirector, IsInternational);
+                screeningService.DeleteScreening(FoundScreening);
+                screeningService.AddNewScreening(newScreening);
+                
+                SendSuccessMessage("The screening was modied successfully.");
+
+            }
+            catch (InvalidOperationException)
+            {
+                    Console.WriteLine("There are no movies uploaded. Please contact the administrator.");
+                    Environment.Exit(1);
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
         }
     }
     

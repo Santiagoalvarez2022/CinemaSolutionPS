@@ -37,10 +37,9 @@ namespace CinemaSolution.Service
                 //como deben ser mis 
                 if (MovieName.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
                 {
-                    //ver camel case
                     Console.WriteLine("The film found is :");
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.WriteLine(item);
+                    Console.WriteLine(MovieName);
                     Console.ResetColor();
                     movie = DataMovie;
                     return true;
@@ -82,22 +81,3 @@ namespace CinemaSolution.Service
 };
 
 
-
-/*
-1,El Secreto del Espejo,115,1,True
-2,La Sombra Olvidada,98,2,False
-3,Viaje al Corazón Estelar,142,3,True
-4,Crónicas de la Ciudad Oculta,105,4,False
-5,El Último Aliento del Dragón,170,5,True
-6,Noches de Neblina,90,6,True
-7,El Enigma del Reloj de Arena,130,7,False
-8,Los Guardianes del Bosque,85,8,True
-9,Canto de Sirenas,110,9,False
-10,La Leyenda del Despertar,155,10,True
-11,Ecos en el Vacío,100,11,True
-12,El Arte de Volar,125,12,False
-13,Susurros del Pasado,95,13,True
-14,La Danza de las Luciérnagas,108,14,True
-15,Conexión Astral,135,15,False
-
-*/

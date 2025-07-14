@@ -20,7 +20,6 @@ namespace CinemaSolution.UI
         //mhetods
         public void InitialOptions()
         {
-            Console.Clear();
             //show options to user
             string[] options = ["Enter the number for your choice:","1 - Create New Screening.", "2 - Delete Screening.", "3 - Modify Screening.", "4 - Exit."];
             Console.Write(" >>>> ");
@@ -32,16 +31,13 @@ namespace CinemaSolution.UI
             switch (option)
             {
                 case 1:
-                    Console.Clear();
                     screeningMenu.CreateScreening(_movieService, _screeningService);
                     break;
                 case 2:
-                    Console.Clear();
                     screeningMenu.DeleteScreening(_movieService, _screeningService);
                     break;
                 case 3:
-                    Console.Clear();
-                    screeningMenu.DeleteScreening(_movieService, _screeningService);
+                    screeningMenu.ModifyScreening(_movieService, _screeningService);
                     break;
                 case 4:
                     Environment.Exit(0);

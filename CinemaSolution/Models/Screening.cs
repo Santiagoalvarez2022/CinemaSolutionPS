@@ -27,7 +27,8 @@ namespace CinemaSolution.Models
 
         public override string ToString()
         {
-            return  Environment.NewLine + $"{Id}|{Price}|{StartScreening.ToString("yyyy-MM-dd HH:mm")}|{FinishScreening.ToString("yyyy-MM-dd HH:mm")}|{IdMovie}|{IdDirector}|{IsInternational}" ;
+            string isInternational = IsInternational.ToString().ToLower();
+            return  $"{Id}|{Price}|{StartScreening.ToString("yyyy-MM-dd HH:mm")}|{FinishScreening.ToString("yyyy-MM-dd HH:mm")}|{IdMovie}|{IdDirector}|{isInternational}" ;
         }
     }
 }

@@ -24,24 +24,33 @@ namespace CinemaSolution.Service
         {
             int id = 1;
             string filePath = _databaseHandler.EnsureFileExists("Screening.txt");
+
+
             string[] dataFile = File.ReadAllLines(filePath);
+
+           
             if (dataFile.Length == 0)
             {
                 return id;
             }
-            string lastLine = dataFile.Last();
-            string lastId = lastLine.Split("|")[0].Trim();
-            if (int.TryParse(lastId, out id))
+
+            foreach (var item in dataFile)
             {
-                return id + 1;
+                string[] ScreeningFields = item.Split('|');
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
+                int current = int.Parse(ScreeningFields[0]);
+                if (current > id)
+                {
+                    id = current;
+                }
             }
-            return id;
+
+            return id + 1;
 
         }
 
-        private bool IsScheduleAvailable(DateTime StartScreening, DateTime FinishScreening)
+        private bool IsScheduleAvailable(DateTime StartScreening, DateTime FinishScreening, List<string> ScreeningLines)
         {
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
 
             string DateToFind = StartScreening.ToString("yyyy-MM-dd");
             foreach (var ScreeningLine in ScreeningLines)
@@ -73,18 +82,16 @@ namespace CinemaSolution.Service
             return true;
         }
 
-        private bool IsDirectorDailyLimitReached(DateTime date, int idDirector)
+        private bool IsDirectorDailyLimitReached(DateTime date, int idDirector, List<string> ScreeningLines)
         {
             string DateToFind = date.ToString("yyyy-MM-dd");
 
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
             int count = 0;
             foreach (var ScreeningLine in ScreeningLines)
             {
                 string[] DataScreening = ScreeningLine.Split('|');
 
                 //Validates the fields of each line, sending exceptions if there is an error.
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, DataScreening, "Screening.txt");
 
                 string DateScreening = DataScreening[2].Trim();
                 int ScreeningDirector = int.Parse(DataScreening[5]);
@@ -108,10 +115,9 @@ namespace CinemaSolution.Service
             }
         }
 
-        private bool IsInternationalLimitReached(DateTime newDate)
+        private bool IsInternationalLimitReached(DateTime newDate, List<string> ScreeningLines)
         {
             string DateToFind = newDate.ToString("yyyy-MM-dd");
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
 
             //vamos a ver cuantas funciones hay
             //ver en ese dia cuantas de ellas son nacionales, y cuales no.
@@ -120,7 +126,6 @@ namespace CinemaSolution.Service
             {
                 string[] ScreeningFields = ScreeningLine.Split('|');
 
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
 
 
 
@@ -133,7 +138,6 @@ namespace CinemaSolution.Service
 
                 if (DateScreening.Contains(DateToFind) && IsInternational)
                 {
-                    Console.WriteLine(ScreeningLine);
                     count++;
                 }
             }
@@ -151,21 +155,34 @@ namespace CinemaSolution.Service
             }
         }
 
-        public bool ValidateInstance(DateTime StartScreening, DateTime FinishScreening, int IdDirector, bool IsInternational)
+        public bool ValidateInstance(DateTime StartScreening, DateTime FinishScreening, int IdDirector, bool IsInternational, List<string> ScreeningLines)
         {
+            if (ScreeningLines.Count == 0)
+            {
+                return true;
+            }
+            //valid that each record has not errors.
+            foreach (string item in ScreeningLines)
+            {
+                string[] ScreeningFields = item.Split('|');
+
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
+
+            }
+
             // - There may be a maximum of 10 screenings per day per director.
             // - International films have a maximum of 8 screenings assigned.
 
-            if (IsDirectorDailyLimitReached(StartScreening, IdDirector))
+            if (IsDirectorDailyLimitReached(StartScreening, IdDirector, ScreeningLines))
             {
                 return false;
             }
 
-            if (IsInternational && IsInternationalLimitReached(StartScreening))
+            if (IsInternational && IsInternationalLimitReached(StartScreening, ScreeningLines))
             {
                 return false;
             }
-            return IsScheduleAvailable(StartScreening, FinishScreening);
+            return IsScheduleAvailable(StartScreening, FinishScreening, ScreeningLines);
         }
 
 
@@ -173,17 +190,20 @@ namespace CinemaSolution.Service
         public void AddNewScreening(Screening NewScreening)
         {
             _databaseHandler.WriteFile("Screening.txt", NewScreening.ToString());
+
         }
 
         public bool GetScreeningByDate(DateTime StartTime, out string[] FoundScreening)
         {
+
             string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
             FoundScreening = [""];
             string DateToFind = StartTime.ToString("yyyy-MM-dd HH:mm");
-
+         
 
             foreach (var ScreeningLine in ScreeningLines)
             {
+
                 string[] ScreeningFields = ScreeningLine.Split('|');
                 _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
 
@@ -209,9 +229,12 @@ namespace CinemaSolution.Service
 
         }
 
-        public void ModifyScreening()
+        public List<string> GetAllScreening()
         {
-            
+            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
+
+
+            return ScreeningLines.ToList(); 
         }
     }
 }

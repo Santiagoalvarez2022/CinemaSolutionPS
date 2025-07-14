@@ -1,0 +1,16 @@
+1|Lucas|Martínez
+2|Sofía|González
+3|Mateo|Fernández
+4|Valentina|Pérez
+5|Julián|López
+6|Camila|Ramírez
+7|Tomás|Gómez
+8|Isabella|Torres
+9|Benjamín|Ruiz
+10|Emilia|Díaz
+11|Martín|Morales
+12|Renata|Vargas
+13|Lautaro|Silva
+14|Catalina|Sosa
+15|Santiago|Castro
+16|Pedro|Gomez
