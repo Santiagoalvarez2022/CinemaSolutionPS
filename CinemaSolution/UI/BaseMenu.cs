@@ -11,15 +11,20 @@ namespace CinemaSolution.UI
         {
             while (true)
             {
-                Console.Write("the correct format is: yyyy-MM-dd HH:mm): ");
+                Console.Write("the correct format is like: 2026-12-24 15:00): ");
                 Console.Write(" >>>> ");
                 string input = Console.ReadLine() ?? "";
+
                 if (DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm",
                     System.Globalization.CultureInfo.InvariantCulture,
                     System.Globalization.DateTimeStyles.None, out DateTime dateValid))
                 {
                     NewDate = dateValid;
                     break;
+                }
+                else
+                {
+                    SendMessageError("The date has an incorrect format");
                 }
             }
             return NewDate;
@@ -30,10 +35,11 @@ namespace CinemaSolution.UI
             decimal value;
             while (true)
             {
-                Console.WriteLine("Enter price (e.g., 4500.00) :");
+                Console.WriteLine("enter price (e.g., 4500.00) :");
+
                 string input = Console.ReadLine() ?? "";
 
-                if (decimal.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out value))
+                 if (decimal.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
                 {
                     if (value >= 0) // Prices are usually non-negative
                     {
@@ -88,7 +94,6 @@ namespace CinemaSolution.UI
             while (!flag)
             {
                 string input = Console.ReadLine() ?? "";
-
                 //intento parsear el valor recibido por consola a un numero entero , ademas tiene que ser positivo y menor al max de opciones 
                 if (int.TryParse(input, out option) && option > 0 && option <= max)
                 {
@@ -101,6 +106,57 @@ namespace CinemaSolution.UI
                 }
             }
             return option;
+        }
+
+        public bool GetUserOption()
+        {
+            Console.WriteLine("Press 1 to continue, or 2 to go back.");
+            int input = InputNaturalNumbers(2);
+            if (input == 1)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        } 
+
+       public void GetUserMenuChoice()
+        {
+            int choice;
+            while (true)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Press 1 to return to the Main Menu, or 0 to exit.");
+                Console.ResetColor();
+                Console.Write(" >>>> ");
+
+                string input = Console.ReadLine();
+                Console.ResetColor();
+
+                if (int.TryParse(input, out choice))
+                {
+                    if (choice == 0)
+                    {
+                        Console.WriteLine("Exiting application. Goodbye!");
+                        Environment.Exit(0); // Termina la aplicación
+                    }
+                    else if (choice == 1)
+                    {
+                        Console.WriteLine("Returning to the Main Menu...");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input. Please enter 1 to return to the Main Menu, or 0 to exit.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input. Please enter a number.");
+                }
+            }
         }
     }
 }

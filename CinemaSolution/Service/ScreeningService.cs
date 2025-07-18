@@ -1,4 +1,10 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
 using CinemaSolution.Models;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 
 namespace CinemaSolution.Service
 {
@@ -28,7 +34,7 @@ namespace CinemaSolution.Service
 
             string[] dataFile = File.ReadAllLines(filePath);
 
-           
+
             if (dataFile.Length == 0)
             {
                 return id;
@@ -126,11 +132,9 @@ namespace CinemaSolution.Service
             {
                 string[] ScreeningFields = ScreeningLine.Split('|');
 
-
-
-
                 //date field                
                 string DateScreening = ScreeningFields[2].Trim();
+
                 //isInternational field
                 string IsInternationalF = ScreeningFields[6].Trim();
                 bool IsInternational = bool.Parse(IsInternationalF);
@@ -187,19 +191,39 @@ namespace CinemaSolution.Service
 
 
 
-        public void AddNewScreening(Screening NewScreening)
+        public bool AddNewScreening(Screening NewScreening)
         {
             _databaseHandler.WriteFile("Screening.txt", NewScreening.ToString());
-
+            return true;
         }
 
+        public bool GetScreeningById(int IdSelected, out string[] FoundScreening)
+        {
+            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
+            FoundScreening = [""];
+            Console.WriteLine(IdSelected);
+
+            foreach (var ScreeningLine in ScreeningLines)
+            {
+                string[] ScreeningFields = ScreeningLine.Split('|');
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
+                string IdField = ScreeningFields[0].Trim();
+                int IdScreening = int.Parse(IdField);
+                if (IdSelected == IdScreening)
+                {
+                    FoundScreening = ScreeningFields;
+                    return true;
+                }
+            }
+            return false;
+        }
         public bool GetScreeningByDate(DateTime StartTime, out string[] FoundScreening)
         {
 
             string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
             FoundScreening = [""];
             string DateToFind = StartTime.ToString("yyyy-MM-dd HH:mm");
-         
+
 
             foreach (var ScreeningLine in ScreeningLines)
             {
@@ -233,8 +257,55 @@ namespace CinemaSolution.Service
         {
             string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
 
-
-            return ScreeningLines.ToList(); 
+            return ScreeningLines.ToList();
         }
+
+        public bool ShowScreening(MovieService movieService)
+        {
+            List<string> allScreening = GetAllScreening();
+
+            // List to store the lines along with their DateTime for sorting
+            var linesWithParsedTime = new List<(string[] originalLine, DateTime startTime)>();
+            Console.WriteLine("ID - DAY - START TIME - END TIME - PRICE - MOVIE - NATIONAL/INTERNATIONAL ");
+            if (allScreening.Count() == 0)
+            {
+                return false;
+            }
+            foreach (var line in allScreening)
+            {
+                string[] fieldsScreening = line.Split("|");
+                string startTimeString = fieldsScreening[2];
+                string movieIdString = fieldsScreening[4];
+                int movieId = int.Parse(movieIdString);
+                string[] fieldsMovie = [""];
+                if (movieService.GetMovieById(movieId, out fieldsMovie))
+                {
+                    // try to parse date and time.
+                    if (DateTime.TryParseExact(startTimeString, "yyyy-MM-dd HH:mm",
+                                            CultureInfo.InvariantCulture,
+                                            DateTimeStyles.None, out DateTime startTime))
+                    {
+                        //add line string with 
+                        string[] fields = fieldsScreening.Concat(fieldsMovie).ToArray();
+                        linesWithParsedTime.Add((fields, startTime));
+                    }
+                }
+
+            }
+
+            List<string[]> sortedParsedLines = linesWithParsedTime
+                                                                .OrderBy(item => item.startTime)
+                                                                .Select(item => item.originalLine)
+                                                                .ToList();
+
+
+            foreach (var fields in sortedParsedLines)
+            {
+                string isInternational = fields[11] == "true" ? "INTERNATIONAL" : "NATIONAL";
+                Console.WriteLine($"{fields[0]} - {fields[2].Substring(0, 10)} - {fields[2].Substring(11, 5)} - {fields[3].Substring(11, 5)} - {fields[1]} - {fields[8]} - {isInternational}");
+            }
+            return true;                            
+        }
+
     }
 }

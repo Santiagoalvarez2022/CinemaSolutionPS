@@ -20,33 +20,38 @@ namespace CinemaSolution.UI
         //mhetods
         public void InitialOptions()
         {
-            //show options to user
-            string[] options = ["Enter the number for your choice:","1 - Create New Screening.", "2 - Delete Screening.", "3 - Modify Screening.", "4 - Exit."];
-            Console.Write(" >>>> ");
-
-            SendInstruction(options);
-            // Validate that the selected option is within the allowed range, including the maximum value
-            int option = InputNaturalNumbers(4);
-
-            switch (option)
+            bool flag = false;
+            while (!flag)
             {
-                case 1:
-                    screeningMenu.CreateScreening(_movieService, _screeningService);
-                    break;
-                case 2:
-                    screeningMenu.DeleteScreening(_movieService, _screeningService);
-                    break;
-                case 3:
-                    screeningMenu.ModifyScreening(_movieService, _screeningService);
-                    break;
-                case 4:
-                    Environment.Exit(0);
-                    break;
-                default:
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("");
-                    break;
+                //show options to user
+                string[] options = ["Enter the number for your choice:","1 - See all Screenings","2 - Create New Screening.",  "3 - Modify Screening.", "4 - Delete Screening.", "5 - Exit."];
+                SendInstruction(options);
+                Console.Write(" >>>> ");
+                // Validate that the selected option is within the allowed range, including the maximum value
+                int option = InputNaturalNumbers(5);
+
+                switch (option)
+                {
+                    case 1:
+                        screeningMenu.SeeScreenings(_movieService, _screeningService);
+                        break;
+                    case 2:
+                        screeningMenu.CreateScreening(_movieService, _screeningService);
+                        break;
+                    case 3:
+                        screeningMenu.ModifyScreening(_movieService, _screeningService);
+                        break;
+                    case 4:
+                        screeningMenu.DeleteScreening(_movieService, _screeningService);
+                        break;
+                    case 5:
+                        Console.WriteLine("Exiting application. Goodbye!");
+                        flag = true;
+                        Environment.Exit(0);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

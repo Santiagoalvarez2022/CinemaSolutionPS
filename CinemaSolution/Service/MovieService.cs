@@ -20,7 +20,7 @@ namespace CinemaSolution.Service
             _databaseHandler = databaseHandler;
         }
         //validar si el nombre corresponde a una pelicula, si se encuentra devuelvo true => Movie intancia, si no false. 
-        public bool SearcMovieByName(string name, out string[] movie)
+        public bool SearcMovieById(int idSelected, out string[] movie)
         {
             movie = [""];
             string[] AllMovies = _databaseHandler.ReadFile("Movies.txt");
@@ -32,15 +32,10 @@ namespace CinemaSolution.Service
                 //Validates the fields of each line, sending exceptions if there is an error.
                 _databaseHandler.ValidateRecord(ExpectedRecordTypes, DataMovie, "Movies.txt");
 
-                string MovieName = DataMovie[1].Trim();
+                int idMovie = int.Parse(DataMovie[0]);
 
-                //como deben ser mis 
-                if (MovieName.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))
+                if (idMovie == idSelected)
                 {
-                    Console.WriteLine("The film found is :");
-                    Console.ForegroundColor = ConsoleColor.DarkGreen;
-                    Console.WriteLine(MovieName);
-                    Console.ResetColor();
                     movie = DataMovie;
                     return true;
                 }
@@ -77,6 +72,21 @@ namespace CinemaSolution.Service
             return false;
 
         }
+
+        public void ShowMovies()
+        {
+            string[] AllMovies = _databaseHandler.ReadFile("Movies.txt");
+            Console.WriteLine("ID - NAME - NATIONAL/INTERNATIONAL");
+
+            foreach (var movieLine in AllMovies)
+            {
+                string[] DataMovie = movieLine.Split("|");
+                string nation = DataMovie[4].Trim() == "true" ? "INTERNATIONAL" : "NATIONAL";
+                Console.WriteLine($"{DataMovie[0]} - {DataMovie[1]} - {nation}");
+            }
+
+        }
+        
     }
 };
 

@@ -37,8 +37,7 @@ namespace CinemaSolution.Service
         {
             if (string.IsNullOrWhiteSpace(fileName))
             {
-                Console.WriteLine("Invalid file name.");
-                return [];
+                throw new InvalidOperationException($"fileName in  DatabaseHandler.ReadFile() doesn't exist.");
             }
 
             string filePath = EnsureFileExists(fileName);
