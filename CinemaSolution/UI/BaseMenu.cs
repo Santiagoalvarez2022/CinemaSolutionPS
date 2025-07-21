@@ -1,25 +1,23 @@
 
-//esta funcion contendra metodos que heredaran los demas menus, estos deben ser reutilzables.
-using System.Globalization; // Add this at the top of your file
+using System.Globalization; 
 namespace CinemaSolution.UI
 {
-    //al ser abstrac no se pueden crear instancias
     public abstract class BaseMenu
     {
-        DateTime NewDate;
-        protected DateTime InputCorrectDateFormat()
+        static protected DateTime InputCorrectDateFormat()
         {
+            DateTime newDate;
             while (true)
             {
                 Console.Write("the correct format is like: 2026-12-24 15:00): ");
                 Console.Write(" >>>> ");
-                string input = Console.ReadLine() ?? "";
+                var input = Console.ReadLine() ?? "";
 
                 if (DateTime.TryParseExact(input, "yyyy-MM-dd HH:mm",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None, out DateTime dateValid))
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var dateValid))
                 {
-                    NewDate = dateValid;
+                    newDate = dateValid;
                     break;
                 }
                 else
@@ -27,24 +25,18 @@ namespace CinemaSolution.UI
                     SendMessageError("The date has an incorrect format");
                 }
             }
-            return NewDate;
+            return newDate;
         }
-
-        protected decimal InputDecimal()
+        static protected decimal InputDecimal()
         {
             decimal value;
             while (true)
             {
-                Console.WriteLine("enter price (e.g., 4500.00) :");
-
-                string input = Console.ReadLine() ?? "";
-
-                 if (decimal.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                Console.WriteLine("Enter price (e.g., 4500.00) :");
+                var input = Console.ReadLine() ?? "";
+                if (decimal.TryParse(input, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
                 {
-                    if (value >= 0) // Prices are usually non-negative
-                    {
-                        break;
-                    }
+                    if (value >= 0) break;
                     else
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -62,17 +54,17 @@ namespace CinemaSolution.UI
             return value;
         }
 
-        protected void SendInstruction(string[] instructions)
+       static protected void SendInstruction(List<string> instructions)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
-            foreach (string message in instructions)
+            foreach (var message in instructions)
             {
                 Console.WriteLine(message);
             }
             Console.ResetColor();
         }
 
-        protected void SendSuccessMessage(string message)
+        static protected void SendSuccessMessage(string message)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(message);
@@ -81,24 +73,20 @@ namespace CinemaSolution.UI
             Console.ResetColor();
         }
 
-        protected void SendMessageError(string message)
+        static protected void SendMessageError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ResetColor();
         }
-        protected int InputNaturalNumbers(int max)
+        static protected int InputNaturalNumbers(int max)
         {
-            bool flag = false;
-            int option = 0;
+            var flag = false;
+            var option = 0;
             while (!flag)
             {
-                string input = Console.ReadLine() ?? "";
-                //intento parsear el valor recibido por consola a un numero entero , ademas tiene que ser positivo y menor al max de opciones 
-                if (int.TryParse(input, out option) && option > 0 && option <= max)
-                {
-                    return option;
-                }
+                var input = Console.ReadLine() ?? "";
+                if (int.TryParse(input, out option) && option > 0 && option <= max) return option;
                 else
                 {
                     SendMessageError($"Oops! That option isn't valid. Please try again by entering a number. It must be a whole number between 1 and {max}, inclusive.");
@@ -108,10 +96,10 @@ namespace CinemaSolution.UI
             return option;
         }
 
-        public bool GetUserOption()
+        static public bool GetUserOption()
         {
             Console.WriteLine("Press 1 to continue, or 2 to go back.");
-            int input = InputNaturalNumbers(2);
+            var input = InputNaturalNumbers(2);
             if (input == 1)
             {
                 return false;
@@ -122,25 +110,23 @@ namespace CinemaSolution.UI
             }
         } 
 
-       public void GetUserMenuChoice()
+       static public void GetUserMenuChoice()
         {
-            int choice;
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Press 1 to return to the Main Menu, or 0 to exit.");
                 Console.ResetColor();
                 Console.Write(" >>>> ");
-
-                string input = Console.ReadLine();
+                var input = Console.ReadLine() ?? "";
                 Console.ResetColor();
 
-                if (int.TryParse(input, out choice))
+                if (int.TryParse(input, out var choice))
                 {
                     if (choice == 0)
                     {
                         Console.WriteLine("Exiting application. Goodbye!");
-                        Environment.Exit(0); // Termina la aplicación
+                        Environment.Exit(0); 
                     }
                     else if (choice == 1)
                     {

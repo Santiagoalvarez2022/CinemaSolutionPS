@@ -4,7 +4,6 @@ namespace CinemaSolution.Models
 {
     public class Screening
     {
-        //Properties
         public int Id { get; }
         public decimal Price { get; }
         public DateTime StartScreening { get; }
@@ -13,7 +12,6 @@ namespace CinemaSolution.Models
         public int IdDirector { get; }
         public bool IsInternational { get; }
 
-        //Constructor
         public Screening(int id, decimal price, DateTime startScreening, DateTime finishScreening, int idMovie, int idDirector, bool isInternational)
         {
             Id = id;
@@ -27,8 +25,8 @@ namespace CinemaSolution.Models
 
         public override string ToString()
         {
-            string isInternational = IsInternational.ToString().ToLower();
-            return  $"{Id}|{Price}|{StartScreening.ToString("yyyy-MM-dd HH:mm")}|{FinishScreening.ToString("yyyy-MM-dd HH:mm")}|{IdMovie}|{IdDirector}|{isInternational}" ;
+            var isInternational = IsInternational.ToString().ToLower();
+            return  $"{Id}|{Price}|{StartScreening:yyyy-MM-dd HH:mm}|{FinishScreening:yyyy-MM-dd HH:mm}|{IdMovie}|{IdDirector}|{isInternational}" ;
         }
     }
 }

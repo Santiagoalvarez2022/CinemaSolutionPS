@@ -1,42 +1,38 @@
-using CinemaSolution.Models;
 namespace CinemaSolution.Service
 {
     public class MovieService
     {
         private readonly DatabaseHandler _databaseHandler;
 
-        public static readonly Type[] ExpectedRecordTypes = new Type[]
-        {
+        public static readonly List<Type> ExpectedRecordTypes = [
             typeof(int),       // ID
             typeof(string),   // Name
             typeof(int),  // Duration
-            typeof(int),       // IdDirector
+            typeof(int),       // IdDirector 
             typeof(bool)       // IsInternational
-        };
+        ];
 
 
         public MovieService(DatabaseHandler databaseHandler)
         {
             _databaseHandler = databaseHandler;
         }
-        //validar si el nombre corresponde a una pelicula, si se encuentra devuelvo true => Movie intancia, si no false. 
-        public bool SearcMovieById(int idSelected, out string[] movie)
+        public bool SearcMovieById(int idSelected, out List<string> movie)
         {
             movie = [""];
-            string[] AllMovies = _databaseHandler.ReadFile("Movies.txt");
-            //realizo la busqueda, si esta envio el nombre si no false 
-            foreach (var item in AllMovies)
+            var allMovies = _databaseHandler.ReadFile("Movies.txt");
+
+            foreach (var item in allMovies)
             {
-                string[] DataMovie = item.Split("|");
+                var dataMovie = item.Split("|").ToList();
 
-                //Validates the fields of each line, sending exceptions if there is an error.
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, DataMovie, "Movies.txt");
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, dataMovie, "Movies.txt");
 
-                int idMovie = int.Parse(DataMovie[0]);
+                var idMovie = int.Parse(dataMovie[0]);
 
                 if (idMovie == idSelected)
                 {
-                    movie = DataMovie;
+                    movie = dataMovie;
                     return true;
                 }
             }
@@ -46,43 +42,37 @@ namespace CinemaSolution.Service
 
 
 
-        public bool GetMovieById(int id, out string[] movie)
+        public bool GetMovieById(int id, out List<string> movie)
         {
             movie = [""];
-            string[] AllMovies = _databaseHandler.ReadFile("Movies.txt");
-
-            foreach (var movieLine in AllMovies)
+            var allMovies = _databaseHandler.ReadFile("Movies.txt");
+            foreach (var movieLine in allMovies)
             {
-                string[] DataMovie = movieLine.Split("|");
-
-                string IdMovieField = DataMovie[0].Trim();
-                int IdMovie = 0;
-                if (int.TryParse(IdMovieField, out IdMovie))
+                var dataMovie = movieLine.Split("|").ToList();
+                var idMovieField = dataMovie[0].Trim();
+                if (int.TryParse(idMovieField, out var idMovie))
                 {
-                    if (id == IdMovie)
+                    if (id == idMovie)
                     {
-                        movie = DataMovie;
+                        movie = dataMovie;
                         return true;
                     }
                 }
 
             }
-            //lanzar error si no lo encuentro.
-
             return false;
-
         }
 
         public void ShowMovies()
         {
-            string[] AllMovies = _databaseHandler.ReadFile("Movies.txt");
+            var allMovies = _databaseHandler.ReadFile("Movies.txt");
             Console.WriteLine("ID - NAME - NATIONAL/INTERNATIONAL");
 
-            foreach (var movieLine in AllMovies)
+            foreach (var movieLine in allMovies)
             {
-                string[] DataMovie = movieLine.Split("|");
-                string nation = DataMovie[4].Trim() == "true" ? "INTERNATIONAL" : "NATIONAL";
-                Console.WriteLine($"{DataMovie[0]} - {DataMovie[1]} - {nation}");
+                var dataMovie = movieLine.Split("|").ToList();
+                var nation = dataMovie[4].Trim() == "true" ? "INTERNATIONAL" : "NATIONAL";
+                Console.WriteLine($"{dataMovie[0]} - {dataMovie[1]} - {nation}");
             }
 
         }

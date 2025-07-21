@@ -1,26 +1,20 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using CinemaSolution.Models;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 
 namespace CinemaSolution.Service
 {
     public class ScreeningService
     {
         private readonly DatabaseHandler _databaseHandler;
-        public static readonly Type[] ExpectedRecordTypes = new Type[]
-        {
+        public static readonly List<Type> ExpectedRecordTypes = [
             typeof(int),       // Id
             typeof(decimal),   // Price
             typeof(DateTime),  // StartScreening
             typeof(DateTime),  // FinishScreening
             typeof(int),       // IdMovie
-            typeof(int),  // IdDirector
+            typeof(int),      // IdDirector
             typeof(bool)       // IsInternational
-        };
+        ];
         public ScreeningService(DatabaseHandler databaseHandler)
         {
             _databaseHandler = databaseHandler;
@@ -28,54 +22,43 @@ namespace CinemaSolution.Service
 
         public int GetNewId()
         {
-            int id = 1;
-            string filePath = _databaseHandler.EnsureFileExists("Screening.txt");
+            var id = 1;
+            var filePath = _databaseHandler.EnsureFileExists("Screening.txt");
+            var dataFile = File.ReadAllLines(filePath).ToList();
 
-
-            string[] dataFile = File.ReadAllLines(filePath);
-
-
-            if (dataFile.Length == 0)
-            {
-                return id;
-            }
+            if (dataFile.Count == 0) return id;
 
             foreach (var item in dataFile)
             {
-                string[] ScreeningFields = item.Split('|');
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
-                int current = int.Parse(ScreeningFields[0]);
+                var screeningFields = item.Split('|').ToList();
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, screeningFields, "Screening.txt");
+                var current = int.Parse(screeningFields[0]);
                 if (current > id)
                 {
                     id = current;
                 }
             }
-
-            return id + 1;
+            return ++id ;
 
         }
 
-        private bool IsScheduleAvailable(DateTime StartScreening, DateTime FinishScreening, List<string> ScreeningLines)
+        private static bool IsScheduleAvailable(DateTime startScreening, DateTime finishScreening, List<string> screeningLines)
         {
-
-            string DateToFind = StartScreening.ToString("yyyy-MM-dd");
-            foreach (var ScreeningLine in ScreeningLines)
+            var dateToFind = startScreening.ToString("yyyy-MM-dd");
+            foreach (var screeningLine in screeningLines)
             {
-                string[] ScreeningFields = ScreeningLine.Split('|');
-                string DateScreening = ScreeningFields[2].Trim();
+                var screeningFields = screeningLine.Split('|').ToList();
+                var dateScreening = screeningFields[2].Trim();
 
-                if (DateScreening.Contains(DateToFind))
+                if (dateScreening.Contains(dateToFind))
                 {
-                    //solo si el dia coincide voy a parser el string
-                    //datos de la funcion ya guardada
-                    DateTime start = DateTime.Parse(ScreeningFields[2]);
-                    DateTime end = DateTime.Parse(ScreeningFields[3]);
+                    var start = DateTime.Parse(screeningFields[2]);
+                    var end = DateTime.Parse(screeningFields[3]);
 
-                    bool overlap = StartScreening < end && FinishScreening > start;
+                    var overlap = startScreening < end && finishScreening > start;
 
                     if (overlap)
                     {
-                        //si se pisan los horarios overlap => true entonces 
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("Sorry, the time slot you've chosen is already taken by another movie.");
                         Console.ResetColor();
@@ -83,26 +66,19 @@ namespace CinemaSolution.Service
                     }
                 }
             }
-
-            //se puede crear la funcion.
             return true;
         }
 
-        private bool IsDirectorDailyLimitReached(DateTime date, int idDirector, List<string> ScreeningLines)
+        private static bool IsDirectorDailyLimitReached(DateTime date, int idDirector, List<string> screeningLines)
         {
-            string DateToFind = date.ToString("yyyy-MM-dd");
-
-            int count = 0;
-            foreach (var ScreeningLine in ScreeningLines)
+            var dateToFind = date.ToString("yyyy-MM-dd");
+            var count = 0;
+            foreach (var screeningLine in screeningLines)
             {
-                string[] DataScreening = ScreeningLine.Split('|');
-
-                //Validates the fields of each line, sending exceptions if there is an error.
-
-                string DateScreening = DataScreening[2].Trim();
-                int ScreeningDirector = int.Parse(DataScreening[5]);
-
-                if (DateScreening.Contains(DateToFind) && ScreeningDirector == idDirector)
+                var dataScreening = screeningLine.Split('|');
+                var dateScreening = dataScreening[2].Trim();
+                var screeningDirector = int.Parse(dataScreening[5]);
+                if (dateScreening.Contains(dateToFind) && screeningDirector == idDirector)
                 {
                     count++;
                 }
@@ -121,35 +97,23 @@ namespace CinemaSolution.Service
             }
         }
 
-        private bool IsInternationalLimitReached(DateTime newDate, List<string> ScreeningLines)
+        private bool IsInternationalLimitReached(DateTime newDate, List<string> screeningLines)
         {
-            string DateToFind = newDate.ToString("yyyy-MM-dd");
-
-            //vamos a ver cuantas funciones hay
-            //ver en ese dia cuantas de ellas son nacionales, y cuales no.
-            int count = 0;
-            foreach (var ScreeningLine in ScreeningLines)
+            var dateToFind = newDate.ToString("yyyy-MM-dd");
+            var count = 0;
+            foreach (var screeningLine in screeningLines)
             {
-                string[] ScreeningFields = ScreeningLine.Split('|');
-
-                //date field                
-                string DateScreening = ScreeningFields[2].Trim();
-
-                //isInternational field
-                string IsInternationalF = ScreeningFields[6].Trim();
-                bool IsInternational = bool.Parse(IsInternationalF);
-
-
-                if (DateScreening.Contains(DateToFind) && IsInternational)
+                var screeningFields = screeningLine.Split('|');
+                var dateScreening = screeningFields[2].Trim();
+                var isInternationalF = screeningFields[6].Trim();
+                var isInternational = bool.Parse(isInternationalF);
+                if (dateScreening.Contains(dateToFind) && isInternational)
                 {
                     count++;
                 }
             }
+            if (count < 8) return false;
 
-            if (count < 8)
-            {
-                return false;
-            }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -159,93 +123,75 @@ namespace CinemaSolution.Service
             }
         }
 
-        public bool ValidateInstance(DateTime StartScreening, DateTime FinishScreening, int IdDirector, bool IsInternational, List<string> ScreeningLines)
+        public bool ValidateInstance(DateTime startScreening, DateTime finishScreening, int idDirector, bool isInternational, List<string> screeningLines)
         {
-            if (ScreeningLines.Count == 0)
-            {
-                return true;
-            }
-            //valid that each record has not errors.
-            foreach (string item in ScreeningLines)
-            {
-                string[] ScreeningFields = item.Split('|');
+            if (screeningLines.Count == 0) return true;
 
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
+            foreach (var item in screeningLines)
+            {
+                var screeningFields = item.Split('|').ToList();
+
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, screeningFields, "Screening.txt");
 
             }
+            if (IsDirectorDailyLimitReached(startScreening, idDirector, screeningLines)) return false;
 
-            // - There may be a maximum of 10 screenings per day per director.
-            // - International films have a maximum of 8 screenings assigned.
+            if (isInternational && IsInternationalLimitReached(startScreening, screeningLines)) return false;
 
-            if (IsDirectorDailyLimitReached(StartScreening, IdDirector, ScreeningLines))
-            {
-                return false;
-            }
-
-            if (IsInternational && IsInternationalLimitReached(StartScreening, ScreeningLines))
-            {
-                return false;
-            }
-            return IsScheduleAvailable(StartScreening, FinishScreening, ScreeningLines);
+            return IsScheduleAvailable(startScreening, finishScreening, screeningLines);
         }
 
 
 
-        public bool AddNewScreening(Screening NewScreening)
+        public bool AddNewScreening(Screening newScreening)
         {
-            _databaseHandler.WriteFile("Screening.txt", NewScreening.ToString());
+            _databaseHandler.WriteFile("Screening.txt", newScreening.ToString());
             return true;
         }
 
-        public bool GetScreeningById(int IdSelected, out string[] FoundScreening)
+        public bool GetScreeningById(int idSelected, out List<string> foundScreening)
         {
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
-            FoundScreening = [""];
-            Console.WriteLine(IdSelected);
-
-            foreach (var ScreeningLine in ScreeningLines)
+            var screeningLines = _databaseHandler.ReadFile("Screening.txt");
+            foundScreening = [""];
+            foreach (var ScreeningLine in screeningLines)
             {
-                string[] ScreeningFields = ScreeningLine.Split('|');
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
-                string IdField = ScreeningFields[0].Trim();
-                int IdScreening = int.Parse(IdField);
-                if (IdSelected == IdScreening)
+                var screeningFields = ScreeningLine.Split('|').ToList();
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, screeningFields, "Screening.txt");
+                var idField = screeningFields[0].Trim();
+                var idScreening = int.Parse(idField);
+                if (idSelected == idScreening)
                 {
-                    FoundScreening = ScreeningFields;
+                    foundScreening = screeningFields;
                     return true;
                 }
             }
             return false;
         }
-        public bool GetScreeningByDate(DateTime StartTime, out string[] FoundScreening)
+        public bool GetScreeningByDate(DateTime startTime, out List<string> foundScreening)
         {
 
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
-            FoundScreening = [""];
-            string DateToFind = StartTime.ToString("yyyy-MM-dd HH:mm");
-
-
-            foreach (var ScreeningLine in ScreeningLines)
+            var screeningLines = _databaseHandler.ReadFile("Screening.txt");
+            foundScreening = [""];
+            var dateToFind = startTime.ToString("yyyy-MM-dd HH:mm");
+            foreach (var screeningLine in screeningLines)
             {
+                var screeningFields = screeningLine.Split('|').ToList();
+                _databaseHandler.ValidateRecord(ExpectedRecordTypes, screeningFields, "Screening.txt");
 
-                string[] ScreeningFields = ScreeningLine.Split('|');
-                _databaseHandler.ValidateRecord(ExpectedRecordTypes, ScreeningFields, "Screening.txt");
-
-                string StartScreening = ScreeningFields[2].Trim();
-                if (StartScreening == DateToFind)
+                var startScreening = screeningFields[2].Trim();
+                if (startScreening == dateToFind)
                 {
-                    FoundScreening = ScreeningFields;
+                    foundScreening = screeningFields;
                     return true;
-
                 }
             }
             return false;
         }
 
-        public void DeleteScreening(string[] foundScreening)
+        public void DeleteScreening(List<string> foundScreening)
         {
-            string lineToDelete = string.Join("|", foundScreening);
-            bool succedDelete = _databaseHandler.DeleteLine(lineToDelete, "Screening.txt");
+            var lineToDelete = string.Join("|", foundScreening);
+            var succedDelete = _databaseHandler.DeleteLine(lineToDelete, "Screening.txt");
             if (succedDelete)
             {
                 Console.WriteLine("Movie screening successfully removed.");
@@ -255,53 +201,38 @@ namespace CinemaSolution.Service
 
         public List<string> GetAllScreening()
         {
-            string[] ScreeningLines = _databaseHandler.ReadFile("Screening.txt");
-
-            return ScreeningLines.ToList();
+            var screeningLines = _databaseHandler.ReadFile("Screening.txt");
+            return [.. screeningLines];
         }
 
         public bool ShowScreening(MovieService movieService)
         {
-            List<string> allScreening = GetAllScreening();
-
-            // List to store the lines along with their DateTime for sorting
-            var linesWithParsedTime = new List<(string[] originalLine, DateTime startTime)>();
+            var allScreening = GetAllScreening();
+            var linesWithParsedTime = new List<( List<string> originalLine, DateTime startTime)>();
             Console.WriteLine("ID - DAY - START TIME - END TIME - PRICE - MOVIE - NATIONAL/INTERNATIONAL ");
-            if (allScreening.Count() == 0)
-            {
-                return false;
-            }
+
+            if (allScreening.Count == 0) return false;
+
             foreach (var line in allScreening)
             {
-                string[] fieldsScreening = line.Split("|");
-                string startTimeString = fieldsScreening[2];
-                string movieIdString = fieldsScreening[4];
-                int movieId = int.Parse(movieIdString);
-                string[] fieldsMovie = [""];
-                if (movieService.GetMovieById(movieId, out fieldsMovie))
+                var fieldsScreening = line.Split("|");
+                var startTimeString = fieldsScreening[2];
+                var movieIdString = fieldsScreening[4];
+                var movieId = int.Parse(movieIdString);
+                if (movieService.GetMovieById(movieId, out var fieldsMovie))
                 {
-                    // try to parse date and time.
-                    if (DateTime.TryParseExact(startTimeString, "yyyy-MM-dd HH:mm",
-                                            CultureInfo.InvariantCulture,
-                                            DateTimeStyles.None, out DateTime startTime))
+                    if (DateTime.TryParseExact(startTimeString, "yyyy-MM-dd HH:mm",CultureInfo.InvariantCulture,DateTimeStyles.None, out var startTime))
                     {
-                        //add line string with 
-                        string[] fields = fieldsScreening.Concat(fieldsMovie).ToArray();
+                        var fields = fieldsScreening.Concat(fieldsMovie).ToList();
                         linesWithParsedTime.Add((fields, startTime));
                     }
                 }
 
             }
-
-            List<string[]> sortedParsedLines = linesWithParsedTime
-                                                                .OrderBy(item => item.startTime)
-                                                                .Select(item => item.originalLine)
-                                                                .ToList();
-
-
+            var sortedParsedLines = linesWithParsedTime.OrderBy(item => item.startTime).Select(item => item.originalLine).ToList();
             foreach (var fields in sortedParsedLines)
             {
-                string isInternational = fields[11] == "true" ? "INTERNATIONAL" : "NATIONAL";
+                var isInternational = fields[11] == "true" ? "INTERNATIONAL" : "NATIONAL";
                 Console.WriteLine($"{fields[0]} - {fields[2].Substring(0, 10)} - {fields[2].Substring(11, 5)} - {fields[3].Substring(11, 5)} - {fields[1]} - {fields[8]} - {isInternational}");
             }
             return true;                            
